@@ -1,0 +1,4 @@
+INFO _internal.py:113  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+INFO _internal.py:113 127.0.0.1 - - [03/Sep/2020 11:53:41] "[33mGET / HTTP/1.1[0m" 404 -
+INFO _internal.py:113 127.0.0.1 - - [03/Sep/2020 11:53:49] "[37mGET /index HTTP/1.1[0m" 200 -
+ERROR __init__.py:98 Error: Directory migrations already exists and is not empty
