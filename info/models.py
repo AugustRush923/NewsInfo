@@ -81,6 +81,13 @@ class User(BaseModel, db.Model):
         }
         return resp_dict
 
+    def sha1_passowrd(self, password):
+        import hashlib
+        sha1 = hashlib.sha1()
+        sha1.update(password.encode('utf-8'))
+        password_hash = sha1.hexdigest()
+        return password_hash
+
 
 class News(BaseModel, db.Model):
     """新闻"""

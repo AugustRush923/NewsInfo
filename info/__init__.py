@@ -19,7 +19,7 @@ def create_app(config_name):
     # 配置项目日志
     setup_log(config_name)
     app = Flask(__name__)
-
+    app.secret_key = "1xdfg348sfjsajgnx"
     # 配置
     app.config.from_object(config[config_name])
     # 配置数据库
@@ -35,6 +35,8 @@ def create_app(config_name):
     # 注册蓝图
     from info.modules.index import index_blu
     app.register_blueprint(index_blu)
+    from info.modules.passport import passport_blu
+    app.register_blueprint(passport_blu)
 
     return app
 
