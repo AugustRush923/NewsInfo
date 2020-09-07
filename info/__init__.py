@@ -7,8 +7,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
-from config import config
 
+from config import config
+from info.utils.common import db_index_class
 # 数据库
 db = SQLAlchemy()
 redis_store = None
@@ -37,6 +38,9 @@ def create_app(config_name):
     app.register_blueprint(index_blu)
     from info.modules.passport import passport_blu
     app.register_blueprint(passport_blu)
+
+    # 自定义过滤器
+    app.add_template_filter(db_index_class, 'index_class')
 
     return app
 

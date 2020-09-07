@@ -1,4 +1,3 @@
-import hashlib
 from datetime import datetime
 
 from flask import current_app, jsonify, session

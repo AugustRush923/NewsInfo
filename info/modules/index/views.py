@@ -21,6 +21,7 @@ def index():
     news_list = None
     try:
         news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
+        print(news_list)
     except Exception as e:
         current_app.logger.error(e)
 
