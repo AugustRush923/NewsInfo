@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    新闻名称-新经资讯
+{% endblock %}
+
+{% block more_script %}
+    <script type="text/javascript" src="../../static/news/js/detail.js"></script>
+{% endblock %}
+
+{% block content_block %}
+    <div class="list_con fl">
+        <h3>{{ data.news.title }}</h3>
+        <div class="detail_about clearfix">
+            <span class="time_souce fl">{{ data.news.create_time }} 来源: {{ data.news.source }}</span>
+            <span class="comment fr">{{ data.news.comments_count }}</span>
+        </div>
+        <a href="javascript:;" class="collected block-center" data-newid="{{ data.news.id }}"
+               style="display: {% if data.is_collected %} block
+               {% else %} none {% endif %};"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
+        <a href="javascript:;" class="collection block-center" data-newid="{{ data.news.id }}"
+               style="display: {% if data.is_collected %} none
+               {% else %} block {% endif %};">收藏</a>
+        {{ data.news.content | safe }}
+        ...
+        {% if data.user_info %}
+            <div class="person_pic">
+                <form action="" class="comment_form" data-newsid="{{ data.news.id }}>
+                        <img src="{% if data.user_info.avatar_url %}
+                    {{ data.user_info.avatar_url }}
+                {% else %}
+                      ../../static/news/images/person01.png
+                {% endif %}
+                " alt="用户图标">
+                <textarea placeholder="请发表您的评论" class="comment_input"></textarea>
+                <input type="submit" name="" value="评 论" class="comment_sub">
+                </form>
+            </div>
+        {% else %}
+            <div class="comment_form_logout">
+                登录发表你的评论
+            </div>
+        {% endif %}
+
+        <div class="comment_count">
+            {{ data.news.comments_count }}条评论
+        </div>
+    </div>
+
+{% endblock %}
+

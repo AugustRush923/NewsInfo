@@ -1,22 +1,18 @@
 from . import index_blu
-from flask import render_template, current_app, session, request, jsonify
+from flask import render_template, current_app, g, request, jsonify
 
 from info.models import News, User, Category
 from info import constants
 from info.utils.response_code import RET
+from info.utils.common import login_user_data
 
 
 @index_blu.route('/')
+@login_user_data
 def index():
     # 获取当前用户登录的ID
-    user_id = session.get('user_id')
     # 通过ID获取用户信息
-    user = None
-    if user_id:
-        try:
-            user = User.query.get(user_id)
-        except Exception as e:
-            current_app.logger.error(e)
+    user = g.user
 
     # 获取点击排行数据
     news_list = None

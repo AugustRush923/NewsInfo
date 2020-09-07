@@ -1,4 +1,5 @@
-import ast
+from functools import wraps
+from flask import session, current_app, g
 
 
 def db_index_class(index):
@@ -12,8 +13,17 @@ def db_index_class(index):
         return ""
 
 
-def to_dict(tup):
-    str_tup = tup.__str__()
-    new_str = str_tup.replace("(", "{").replace(")", "}").replace(",", ":")
-    dic = ast.literal_eval(new_str)
-    return dic
+def login_user_data(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = session.get("user_id")
+        user = None
+        if user_id:
+            try:
+                from info.models import User
+                user = User.query.get(user_id)
+            except Exception as e:
+                current_app.logger.error(e)
+        g.user = user
+        return func(*args, **kwargs)
+    return wrapper
