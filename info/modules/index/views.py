@@ -1,7 +1,7 @@
 from . import index_blu
 from flask import render_template, current_app, session
 
-from info.models import News, User
+from info.models import News, User, Category
 from info import constants
 
 
@@ -29,9 +29,17 @@ def index():
     for news in news_list if news_list else []:
         click_news_list.append(news.to_basic_dict())
 
+    # 获取分类数据
+    categories = Category.query.all()
+    print(categories)
+    categories_dicts = []
+    for category in categories:
+        categories_dicts.append(category.to_dict())
+    print(categories_dicts)
     data = {
         "user_info": user.to_dict() if user else None,
         "click_news_list": click_news_list,
+        "categories": categories_dicts
     }
 
     return render_template('news/index.html', data=data)
