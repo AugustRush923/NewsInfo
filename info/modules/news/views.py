@@ -2,7 +2,7 @@ from flask import render_template, current_app, abort, g, request, jsonify
 from flask_wtf.csrf import generate_csrf
 
 from . import news_blu
-from info.models import News, Comment, CommentLike
+from info.models import News, Comment, CommentLike, Category
 from info import constants, db
 from info.utils.response_code import RET
 from info.utils.common import login_user_data
@@ -75,12 +75,18 @@ def detail(news_id):
         if news in user.collection_news:
             is_collected = True
 
+    categories = Category.query.all()
+    categories_dicts = []
+    for category in categories:
+        categories_dicts.append(category.to_dict())
+
     data = {
         "user_info": user.to_dict() if user else None,
         "news": news.to_dict(),
         "click_news_list": click_news_list,
         "is_collected": is_collected,
-        'comments': comment_list
+        'comments': comment_list,
+        'categories': categories_dicts
     }
     return render_template("news/detail.html", data=data)
 

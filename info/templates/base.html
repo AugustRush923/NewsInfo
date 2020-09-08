@@ -2,57 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}首页-新经资讯{% endblock %}</title>
+    <title>{% block titleBlock %}{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="../../static/news/css/reset.css">
+    {% block cssBlock %}
+
+    {% endblock %}
     <link rel="stylesheet" type="text/css" href="../../static/news/css/main.css">
     <script type="text/javascript" src="../../static/news/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="../../static/news/js/main.js"></script>
+    {% block scriptBlock %}
 
-    {% block more_script %}
     {% endblock %}
-
 </head>
-{% block body %}
 <body>
-        <div class="header_con">
-            <div class="header">
-                <a href="/" class="logo fl"><img src="../../static/news/images/logo.png" alt="logo"></a>
+    <div class="header_con">
+        <div class="header">
+            <a href="/" class="logo fl"><img src="../../static/news/images/logo.png" alt="logo"></a>
+            {% block categoryBlock %}
                 <ul class="menu fl">
                     {% for category in data.categories %}
-                        <li class="{% if loop.index0 == 0 %}active{% endif %}" data-cid="{{ category.id }}"><a href="javascript:;">{{ category['name'] }}</a></li>
+                        {% if loop.index == 1 %}
+                            <li data-cid="{{ category.id }}" class="active"><a href="javascript:;">{{ category.name }}</a></li>
+                        {% else %}
+                            <li data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
-
-                <!-- 用户登录后显示下面，隐藏上面 -->
-                {% if data.user_info %}
-                    <div class="user_login fr">
-                        <img src="../../static/news/images/person01.png" class="lgin_pic">
-                        <a href="#">用户{{ data.user_info.nick_name }}</a>
-                        <a href="/passport/logout" class="logout_btn" methods="post">退出</a>
-                    </div>
-                {% else %}
-                    <div class="user_btns fr">
-                        <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="conter_con">
-            {% block content_block %}
-
             {% endblock %}
+            {% if data.user_info %}
+                <!-- 用户登录后显示下面，隐藏上面 -->
+                <div class="user_login fr">
+                    <img src="{% if data.user_info.avatar_url %} {{ data.user_info.avatar_url }} {% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
+                    <a href="/user/info" id="nick_name">{{ data.user_info.nick_name }}</a>
+                    <a href="javascript:;" onclick="logout()">退出</a>
+                </div>
+            {% else %}
+                <div class="user_btns fr">
+                <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
+            </div>
+            {% endif %}
+
+
+        </div>
+    </div>
+
+    <div class="conter_con">
+        {% block contentBlock %}
+
+        {% endblock %}
+
+        {% block rankBlock %}
             <div class="rank_con fr">
+                {% block authorBlock %}
+
+                {% endblock %}
+
                 <div class="rank_title">
                     <h3>点击排行</h3>
                 </div>
                 <ul class="rank_list">
                     {% for news in data.click_news_list %}
-                         <li><span class="{{ loop.index0 | index_class }}">{{ loop.index }}</span><a href="/news/{{ news.id }}">{{ news.title }}</a></li>
+                        <li><span class="{{ loop.index0 | index_class }}">{{ loop.index }}</span><a href="#">{{ news.title }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
-        </div>
+        {% endblock %}
+
+    </div>
+
+    {% block bottomBlock %}
         <div class="footer">
             <div class="footer_links">
                 <a href="">关于我们</a>
@@ -68,6 +86,7 @@
     电话：010-****888    京ICP备*******8号
             </p>
         </div>
+    {% endblock %}
 
         <!-- 登录表单 -->
         <form class="login_form_con">
@@ -132,6 +151,5 @@
             <div class="mask"></div>
         </form>
     </body>
-{% endblock %}
 
 </html>

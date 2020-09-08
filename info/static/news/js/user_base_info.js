@@ -28,7 +28,7 @@ $(function () {
         }
 
         $.ajax({
-            url: "/user/base_info",
+            url: "/profile/user_info",
             type: "post",
             contentType: "application/json",
             headers: {

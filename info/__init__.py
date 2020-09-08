@@ -40,6 +40,8 @@ def create_app(config_name):
     app.register_blueprint(passport_blu)
     from info.modules.news import news_blu
     app.register_blueprint(news_blu)
+    from info.modules.profile import profile_blu
+    app.register_blueprint(profile_blu)
 
     # 自定义过滤器
     app.add_template_filter(db_index_class, 'index_class')
