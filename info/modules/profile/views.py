@@ -3,6 +3,7 @@ from flask import g, redirect, render_template, request, session, current_app, j
 from . import profile_blu
 from info.utils.common import login_user_data
 from info.utils.response_code import RET
+from info import constants
 from ... import db
 
 
@@ -88,3 +89,35 @@ def change_password():
             return jsonify(errno=RET.DBERR, errmsg="保存失败")
 
         return jsonify(errno=RET.OK, errmsg="更改密码成功")
+
+
+@profile_blu.route("/collection")
+@login_user_data
+def collection():
+    p = request.args.get('p', 1)
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        p = 1
+    user = g.user
+    collect_list = []
+    current_page = 1
+    total_page = 1
+
+    try:
+        paginate = user.collection_news.paginate(p, constants.USER_COLLECTION_MAX_NEWS, False)
+        collections = paginate.items
+        current_page = paginate.page
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+
+    for news in collections:
+        collect_list.append(news.to_basic_dict())
+    data = {
+        'collections': collect_list,
+        'current_page': current_page,
+        'total_page': total_page
+    }
+    return render_template("news/user_collection.html", data=data)
