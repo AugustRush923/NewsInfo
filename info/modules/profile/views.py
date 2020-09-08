@@ -62,3 +62,29 @@ def user_info():
         session['nick_name'] = nick_name
 
         return jsonify(errno=RET.OK, errmsg="更新成功")
+
+
+@profile_blu.route("/change_password", methods=["GET", "POST"])
+@login_user_data
+def change_password():
+    user = g.user
+    if request.method == 'GET':
+        return render_template("news/user_pass_info.html")
+    if request.method == 'POST':
+        old_password = request.json.get('old_password')
+        new_password = request.json.get('new_password')
+        if not all([old_password, new_password]):
+            return jsonify(errno=RET.DATAERR, errmsg="参数错误")
+
+        if not user.check_password(old_password):
+            return jsonify(errno=RET.USERERR, errmsg="原密码错误")
+
+        user.password_hash = user.sha1_passowrd(new_password)
+        try:
+            db.session.commit()
+        except Exception as e:
+            current_app.logger.error(e)
+            db.session.rollback()
+            return jsonify(errno=RET.DBERR, errmsg="保存失败")
+
+        return jsonify(errno=RET.OK, errmsg="更改密码成功")

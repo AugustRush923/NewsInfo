@@ -137,7 +137,7 @@ def login():
     return jsonify(errno=RET.OK, errmsg="OK")
 
 
-@passport_blu.route('/logout')
+@passport_blu.route('/logout', methods=['POST'])
 def logout():
     del session["user_id"]
     del session["nick_name"]

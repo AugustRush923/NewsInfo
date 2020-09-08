@@ -88,6 +88,11 @@ class User(BaseModel, db.Model):
         password_hash = sha1.hexdigest()
         return password_hash
 
+    def check_password(self, password):
+        if self.password_hash == self.sha1_passowrd(password):
+            return True
+        return False
+
 
 class News(BaseModel, db.Model):
     """新闻"""
