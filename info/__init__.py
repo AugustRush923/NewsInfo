@@ -3,13 +3,13 @@ import redis
 import logging
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask
+from flask import Flask, render_template, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 
 from config import config
-from info.utils.common import db_index_class
+from info.utils.common import db_index_class, login_user_data
 # 数据库
 db = SQLAlchemy()
 redis_store = None
@@ -46,6 +46,19 @@ def create_app(config_name):
     # 自定义过滤器
     app.add_template_filter(db_index_class, 'index_class')
 
+    @app.errorhandler(404)
+    @login_user_data
+    def page_not_found(_):
+        user = g.user
+        data = {"user_info": user.to_dict() if user else None}
+        return render_template('news/404.html', data=data)
+
+    @app.errorhandler(500)
+    @login_user_data
+    def internal_server_error(_):
+        user = g.user
+        data = {"user_info": user.to_dict() if user else None}
+        return render_template('news/505.html', data=data)
     return app
 
 
