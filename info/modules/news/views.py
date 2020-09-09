@@ -2,7 +2,7 @@ from flask import render_template, current_app, abort, g, request, jsonify
 from flask_wtf.csrf import generate_csrf
 
 from . import news_blu
-from info.models import News, Comment, CommentLike, Category
+from info.models import News, Comment, CommentLike, Category, User
 from info import constants, db
 from info.utils.response_code import RET
 from info.utils.common import login_user_data
@@ -69,11 +69,16 @@ def detail(news_id):
         if g.user and item.id in comment_like_ids:
             comment_dict["is_like"] = True
         comment_list.append(comment_dict)
+
+    # 当前登录用户是否关注当前新闻作者
+    is_followed = False
     # 判断是否收藏该新闻，默认值为 false
     is_collected = False
     if user:
         if news in user.collection_news:
             is_collected = True
+        if news.user.followers.filter(User.id == g.user.id).count() > 0:
+            is_followed = True
 
     categories = Category.query.all()
     categories_dicts = []
@@ -85,6 +90,7 @@ def detail(news_id):
         "news": news.to_dict(),
         "click_news_list": click_news_list,
         "is_collected": is_collected,
+        "is_followed": is_followed,
         'comments': comment_list,
         'categories': categories_dicts
     }
@@ -227,3 +233,48 @@ def comment_like():
         db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg="操作失败")
     return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+@news_blu.route("/followed_user", methods=["POST"])
+@login_user_data
+def followed_user():
+    if not g.user:
+        return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
+
+    user_id = request.json.get("user_id")
+    action = request.json.get("action")
+    print(user_id, action)
+
+    if not all([user_id, action]):
+        return jsonify(errno=RET.DATAERR, errmsg="数据不完整")
+
+    if action not in ('follow', 'unfollowed'):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    # 查询到关注的用户信息
+    try:
+        target_user = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据查询失败")
+
+    if not target_user:
+        return jsonify(errno=RET.NODATA, errmsg="未查询到此用户")
+
+    # 根据不同操作做不同逻辑
+    if action == 'follow':
+        if target_user.followers.filter(User.id == g.user.id).count() > 0:
+            return jsonify(errno=RET.DATAEXIST, errmsg="当前已关注")
+        target_user.followers.append(g.user)
+
+    else:
+        if target_user.followers.filter(User.id == g.user.id).count() > 0:
+            target_user.followers.remove(g.user)
+
+    # 保存到数据库
+    try:
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="保存数据失败")
+    return jsonify(errno=RET.OK, errmsg="关注成功")
