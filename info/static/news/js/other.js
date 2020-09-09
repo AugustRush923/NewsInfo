@@ -86,7 +86,7 @@ function getNewsList(page) {
     var query = decodeQuery()
     var params = {
         "p": page,
-        "user_id": query["id"]
+        "user_id": query["user_id"]
     }
 
     $.get("/profile/other_news_list", params, function (resp) {

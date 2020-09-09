@@ -258,7 +258,7 @@ def user_follow():
 def other_info():
     user = g.user
 
-    user_id = request.args.get("id")
+    user_id = request.args.get("user_id")
     if not user_id:
         return abort(404)
 

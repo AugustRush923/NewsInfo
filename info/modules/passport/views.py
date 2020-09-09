@@ -139,7 +139,8 @@ def login():
 
 @passport_blu.route('/logout', methods=['POST'])
 def logout():
-    del session["user_id"]
-    del session["nick_name"]
-    del session["mobile"]
+    session.pop('user_id', None)
+    session.pop('nick_name', None)
+    session.pop('mobile', None)
+    session.pop('is_admin', None)
     return redirect("/")
