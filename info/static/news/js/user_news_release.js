@@ -11,7 +11,7 @@ $(function () {
 
         // 发布完毕之后需要选中我的发布新闻
         $(this).ajaxSubmit({
-            url: "/user/news_release",
+            url: "/profile/news_release",
             type: "POST",
             headers: {
                 "X-CSRFToken": getCookie('csrf_token')

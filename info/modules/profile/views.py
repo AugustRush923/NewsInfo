@@ -5,6 +5,7 @@ from info.utils.common import login_user_data
 from info.utils.response_code import RET
 from info import constants
 from ... import db
+from info.models import Category, News
 
 
 @profile_blu.route("/info")
@@ -121,3 +122,131 @@ def collection():
         'total_page': total_page
     }
     return render_template("news/user_collection.html", data=data)
+
+
+@profile_blu.route("/news_release", methods=['GET', 'POST'])
+@login_user_data
+def news_release():
+    if request.method == 'GET':
+        # 获取分类信息
+        categories = []
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+        categories_dict = []
+        for category in categories:
+            categories_dict.append(category.to_dict())
+        categories_dict.pop(0)
+        return render_template('news/user_news_release.html', data={'categories': categories_dict})
+
+    if request.method == 'POST':
+        # 获取提交信息
+        source = "个人发布"
+        title = request.form.get('title')
+        category_id = request.form.get('category_id')
+        digest = request.form.get('digest')
+        index_image = request.files.get('index_image')
+        content = request.form.get("content")
+        print(title, category_id, digest)
+        print(content)
+        # 判断提交信息是否完整
+        if all([title, category_id, digest, content]):
+            return jsonify(errno=RET.DATAERR, errmsg='数据不完整')
+
+        # 更新新闻模型
+        news = News()
+        news.title = title
+        news.category_id = category_id
+        news.digest = digest
+        news.content = content
+        news.source = source
+        news.user_id = g.user.id
+        news.status = 1
+
+        # 保存到数据库
+        try:
+            db.session.add(news)
+            db.session.commit()
+        except Exception as e:
+            current_app.logger.error(e)
+            db.session.rollback()
+            return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+
+        return jsonify(errno=RET.OK, errmsg="提交成功,等待审核")
+
+
+@profile_blu.route("/news_list")
+@login_user_data
+def news_list():
+    # 获取页数
+    p = request.args.get("p", 1)
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        p = 1
+
+    user = g.user
+    news_li = []
+    current_page = 1
+    total_page = 1
+    try:
+        paginate = News.query.filter(News.user_id == user.id).paginate(p, constants.USER_COLLECTION_MAX_NEWS, False)
+        # 获取当前页数据
+        news_li = paginate.items
+        # 获取当前页
+        current_page = paginate.page
+        # 获取总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+
+    news_dict_li = []
+
+    for news_item in news_li:
+        news_dict_li.append(news_item.to_review_dict())
+    data = {"news_list": news_dict_li, "total_page": total_page, "current_page": current_page}
+    return render_template('news/user_news_list.html', data=data)
+
+
+@profile_blu.route('/user_follow')
+@login_user_data
+def user_follow():
+    # 获取页数
+    p = request.args.get("p", 1)
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        p = 1
+
+    # 取到当前登录用户
+    user = g.user
+
+    follows = []
+    current_page = 1
+    total_page = 1
+    try:
+        paginate = user.followed.paginate(p, constants.USER_FOLLOWED_MAX_COUNT, False)
+        # 获取当前页数据
+        follows = paginate.items
+        # 获取当前页
+        current_page = paginate.page
+        # 获取总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+
+    user_dict_li = []
+
+    for follow_user in follows:
+        user_dict_li.append(follow_user.to_dict())
+
+    data = {
+        "users": user_dict_li,
+        "total_page": total_page,
+        "current_page": current_page
+    }
+
+    return render_template('news/user_follow.html', data=data)
