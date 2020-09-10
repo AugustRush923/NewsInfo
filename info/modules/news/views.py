@@ -60,16 +60,17 @@ def detail(news_id):
                 comment_like_ids = [comment_like.comment_id for comment_like in comment_likes]
         except Exception as e:
             current_app.logger.error(e)
-
+    print(comments)
     comment_list = []
     for item in comments if comments else []:
+        print(item)
         comment_dict = item.to_dict()
         comment_dict["is_like"] = False
         # 判断用户是否点赞该评论
         if g.user and item.id in comment_like_ids:
             comment_dict["is_like"] = True
         comment_list.append(comment_dict)
-
+    print(comment_list)
     # 当前登录用户是否关注当前新闻作者
     is_followed = False
     # 判断是否收藏该新闻，默认值为 false
@@ -77,7 +78,7 @@ def detail(news_id):
     if user:
         if news in user.collection_news:
             is_collected = True
-        if news.user.followers.filter(User.id == g.user.id).count() > 0:
+        if user.followers.filter(User.id == g.user.id).count() > 0:
             is_followed = True
 
     categories = Category.query.all()
@@ -166,24 +167,24 @@ def news_comment():
         return jsonify(errno=RET.NODATA, errmsg="数据不存在")
 
     # 初始化模型，保存数据
-    comment = Comment()
-    comment.user_id = user.id
-    comment.news_id = news_id
-    comment.content = comment
+    comments = Comment()
+    comments.user_id = user.id
+    comments.news_id = news_id
+    comments.content = comment
     if parent_id:
-        comment.parent_id = parent_id
-
+        comments.parent_id = parent_id
+    print(comments.user_id, comments.news_id, comments.content)
     # 保存到数据库
     try:
-        db.session.add(comment)
+        db.session.add(comments)
         db.session.commit()
     except Exception as e:
         current_app.logger.error(e)
         db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg="保存评论数据失败")
-
+    print(comments.to_dict())
     # 返回响应
-    return jsonify(errno=RET.OK, errmsg="评论成功", data=comment.to_dict())
+    return jsonify(errno=RET.OK, errmsg="评论成功", data=comments.to_dict())
 
 
 @news_blu.route("/comment_like", methods=['POST'])
